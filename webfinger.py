@@ -1,45 +1,68 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
+
+"""A simple Python client implementation of WebFinger (RFC 7033).
+
+WebFinger is a discovery protocol that allows you to find information about
+people or things in a standardized way.
+"""
+
 
 from collections import OrderedDict
 
 import logging
 import requests
 
+
 __version__ = "2.0"
-
-WEBFINGER_TYPE = "application/jrd+json"
-LEGACY_WEBFINGER_TYPES = ["application/json"]
-
-_REL_NAMES = {
-    "http://activitystrea.ms/spec/1.0": "activity_streams",
-    "http://webfinger.net/rel/avatar": "avatar",
-    "http://microformats.org/profile/hcard": "hcard",
-    "http://specs.openid.net/auth/2.0/provider": "open_id",
-    "http://ns.opensocial.org/2008/opensocial/activitystreams": "opensocial",
-    "http://portablecontacts.net/spec/1.0": "portable_contacts",
-    "http://webfinger.net/rel/profile-page": "profile",
-    "http://webfist.org/spec/rel": "webfist",
-    "http://gmpg.org/xfn/11": "xfn",
-}
-
-# Reverse mapping for convenience
-RELS = {v: k for k, v in _REL_NAMES.items()}
 
 
 logger = logging.getLogger("webfinger")
 
 
 class WebFingerException(Exception):
+    """Exception class for WebFinger errors.
+    
+    This can be raised due to content encoding or parsing errors.
+    """
+
     pass
 
 
 class WebFingerResponse(object):
-    """ Response that wraps an RD object. It provides attribute-style access
-        to links for specific rels, responding with the href attribute
-        of the matched element.
+    """Response that wraps an RD object.
+
+    It stores the aliases, properties, and links fields from the JRD. If these
+    are not present, the attributes are set to blank.
+
+    For conveience, links are also stored in as lists in rels, using the rel
+    attribute of links as a key (or None for links where rel is ommitted).
+    URI's will be mapped to friendly attribute names if known (visible in the
+    RELS attribute).
     """
 
+    REL_NAMES = {
+        "http://activitystrea.ms/spec/1.0": "activity_streams",
+        "http://webfinger.net/rel/avatar": "avatar",
+        "http://microformats.org/profile/hcard": "hcard",
+        "http://specs.openid.net/auth/2.0/provider": "open_id",
+        "http://ns.opensocial.org/2008/opensocial/activitystreams":
+            "opensocial",
+        "http://portablecontacts.net/spec/1.0": "portable_contacts",
+        "http://webfinger.net/rel/profile-page": "profile",
+        "http://webfist.org/spec/rel": "webfist",
+        "http://gmpg.org/xfn/11": "xfn",
+    }
+
+    # Reverse mapping for convenience
+    RELS = {v: k for k, v in REL_NAMES.items()}
+
     def __init__(self, jrd):
+        """Initalise WebFingeResponse object with jrd.
+
+        args:
+        jrd - the JRD of the WebFinger response.
+        """
         self.jrd = jrd
 
         try:
@@ -49,13 +72,11 @@ class WebFingerResponse(object):
 
         self.aliases = jrd.get("aliases", [])
         self.properties = jrd.get("properties", {})
-
         self.links = jrd.get("links", [])
-
         self.rels = OrderedDict()
         for link in self.links:
             rel = link.get("rel", None)
-            rel = _REL_NAMES.get(rel, rel)
+            rel = self.REL_NAMES.get(rel, rel)
 
             if rel not in self.rels:
                 rel_list = self.rels[rel] = list()
@@ -65,8 +86,12 @@ class WebFingerResponse(object):
             rel_list.append(link)
 
     def rel(self, relation, attr=None):
-        if relation in _REL_NAMES:
-            relation = _REL_NAMES[relation]
+        """Return a given relation, with an optional attribute.
+
+        If attr is not set, nothing is returned.
+        """
+        if relation in self.REL_NAMES:
+            relation = self.REL_NAMES[relation]
 
         if relation not in self.rels:
             return
@@ -80,58 +105,100 @@ class WebFingerResponse(object):
 
 
 class WebFingerClient(object):
+    """Class for requesting WebFinger lookups as a client.
+
+    You can subclass this for your own needs.
+    """
+
+    WEBFINGER_TYPE = "application/jrd+json"
+    LEGACY_WEBFINGER_TYPES = ["application/json"]
+    WEBFINGER_URL = "https://{host}/.well-known/webfinger"
+    USER_AGENT = "Python-Webfinger/{version}".format(version=__version__)
 
     def __init__(self, timeout=None):
+        """Create a WebFingerClient instance.
+
+        args:
+        timeout - default timeout to use (default None)
+        """
         self.timeout = timeout
 
     def _parse_host(self, resource):
+        """Parse WebFinger URI."""
         host = resource.split("@")[-1]
         return host
 
-    def finger(self, resource, host=None, rel=None, raw=False):
+    def _parse_response(self, response):
+        """Parse WebFinger response."""
+        return WebFingerResponse(resp.json())
+
+    def finger(self, resource, host=None, rel=None, raw=False, params=dict()):
+        """Perform a WebFinger lookup.
+
+        args:
+        resource - resource to look up
+        host - host to use for resource lookup
+        rel - relation to request
+        raw - return unparsed JRD
+        params - HTTP parameters to pass (note: resource and rel will be
+                 overwritten)
+        """
         if not host:
             host = self._parse_host(resource)
 
-        url = "https://%s/.well-known/webfinger" % host
+        url = self.WEBFINGER_URL.format(host=host)
 
         headers = {
-            "User-Agent": "python-webfinger/%s" % __version__,
-            "Accept": WEBFINGER_TYPE,
+            "User-Agent": self.USER_AGENT,
+            "Accept": self.WEBFINGER_TYPE,
         }
 
-        params = {"resource": resource}
+        params["resource"] = resource
         if rel:
             params["rel"] = rel
 
-        resp = requests.get(url, params=params, headers=headers, timeout=self.timeout, verify=True)
+        resp = requests.get(url, params=params, headers=headers,
+                            timeout=self.timeout, verify=True)
         logging.debug("fetching JRD from %s" % resp.url)
 
-        content_type = resp.headers.get("Content-Type", "").split(";", 1)[0].strip()
+        try:
+            content_type = resp.headers["Content-Type"]
+        except KeyError:
+            raise WebFingerException("Invalid Content-Type from server")
+
+        content_type = content_type.split(";", 1)[0].strip()
         logging.debug("response content type: %s" % content_type)
 
-        if content_type != WEBFINGER_TYPE and content_type not in LEGACY_WEBFINGER_TYPES:
-            raise WebFingerException("Invalid response type from server")
+        if (content_type != self.WEBFINGER_TYPE and content_type not in
+                self.LEGACY_WEBFINGER_TYPES):
+            raise WebFingerException("Invalid Content-Type from server")
 
+        response = resp.json()
         if raw:
-            return resp.json()
+            return response 
 
-        return WebFingerResponse(resp.json())
+        return self._parse_response(response)
 
 
 def finger(resource, rel=None):
-    """ Convenience method for invoking WebFingerClient.
+    """Invoke finger without creating a WebFingerClient instance.
+    
+    args:
+    resource - resource to look up
+    rel - relation to request from the server
     """
     return WebFingerClient().finger(resource, rel=rel)
 
 
 if __name__ == "__main__":
-
     import argparse
 
     parser = argparse.ArgumentParser(description="Simple webfinger client.")
     parser.add_argument("acct", metavar="URI", help="account URI")
-    parser.add_argument("-d", "--debug", dest="debug", action="store_true", help="print debug logging output to console")
-    parser.add_argument("-r", "--rel", metavar="REL", dest="rel", help="desired relation")
+    parser.add_argument("-d", "--debug", dest="debug", action="store_true",
+                        help="print debug logging output to console")
+    parser.add_argument("-r", "--rel", metavar="REL", dest="rel",
+                        help="desired relation")
 
     args = parser.parse_args()
 

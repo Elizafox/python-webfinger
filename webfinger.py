@@ -1,26 +1,26 @@
 from __future__ import print_function
 import logging
 
-__version__ = '1.0'
+__version__ = "1.0"
 
 RELS = {
-    'activity_streams': 'http://activitystrea.ms/spec/1.0',
-    'avatar': 'http://webfinger.net/rel/avatar',
-    'hcard': 'http://microformats.org/profile/hcard',
-    'open_id': 'http://specs.openid.net/auth/2.0/provider',
-    'opensocial': 'http://ns.opensocial.org/2008/opensocial/activitystreams',
-    'portable_contacts': 'http://portablecontacts.net/spec/1.0',
-    'profile': 'http://webfinger.net/rel/profile-page',
-    'webfist': 'http://webfist.org/spec/rel',
-    'xfn': 'http://gmpg.org/xfn/11',
+    "activity_streams": "http://activitystrea.ms/spec/1.0",
+    "avatar": "http://webfinger.net/rel/avatar",
+    "hcard": "http://microformats.org/profile/hcard",
+    "open_id": "http://specs.openid.net/auth/2.0/provider",
+    "opensocial": "http://ns.opensocial.org/2008/opensocial/activitystreams",
+    "portable_contacts": "http://portablecontacts.net/spec/1.0",
+    "profile": "http://webfinger.net/rel/profile-page",
+    "webfist": "http://webfist.org/spec/rel",
+    "xfn": "http://gmpg.org/xfn/11",
 }
 
-WEBFINGER_TYPE = 'application/jrd+json'
-LEGACY_WEBFINGER_TYPES = ['application/json']
+WEBFINGER_TYPE = "application/jrd+json"
+LEGACY_WEBFINGER_TYPES = ["application/json"]
 
 UNOFFICIAL_ENDPOINTS = {
-    'facebook.com': 'facebook-webfinger.appspot.com',
-    'twitter.com': 'twitter-webfinger.appspot.com',
+    "facebook.com": "facebook-webfinger.appspot.com",
+    "twitter.com": "twitter-webfinger.appspot.com",
 }
 
 logger = logging.getLogger("webfinger")
@@ -46,23 +46,23 @@ class WebFingerResponse(object):
 
     @property
     def subject(self):
-        return self.jrd.get('subject')
+        return self.jrd.get("subject")
 
     @property
     def aliases(self):
-        return self.jrd.get('aliases', [])
+        return self.jrd.get("aliases", [])
 
     @property
     def properties(self):
-        return self.jrd.get('properties', {})
+        return self.jrd.get("properties", {})
 
     @property
     def links(self):
-        return self.jrd.get('links', [])
+        return self.jrd.get("links", [])
 
-    def rel(self, relation, attr='href'):
+    def rel(self, relation, attr="href"):
         for link in self.links:
-            if link.get('rel') == relation:
+            if link.get("rel") == relation:
                 if attr:
                     return link.get(attr)
                 return link
@@ -80,7 +80,7 @@ class WebFingerClient(object):
 
         if host in UNOFFICIAL_ENDPOINTS and not self.official:
             unofficial_host = UNOFFICIAL_ENDPOINTS[host]
-            logging.debug('host %s is not supported, using unofficial endpoint %s' % (host, unofficial_host))
+            logging.debug("host %s is not supported, using unofficial endpoint %s" % (host, unofficial_host))
             host = unofficial_host
 
         return host
@@ -95,22 +95,22 @@ class WebFingerClient(object):
         url = "https://%s/.well-known/webfinger" % host
 
         headers = {
-            'User-Agent': 'python-webfinger/%s' % __version__,
-            'Accept': WEBFINGER_TYPE,
+            "User-Agent": "python-webfinger/%s" % __version__,
+            "Accept": WEBFINGER_TYPE,
         }
 
-        params = {'resource': resource}
+        params = {"resource": resource}
         if rel:
-            params['rel'] = rel
+            params["rel"] = rel
 
         resp = requests.get(url, params=params, headers=headers, timeout=self.timeout, verify=True)
-        logging.debug('fetching JRD from %s' % resp.url)
+        logging.debug("fetching JRD from %s" % resp.url)
 
-        content_type = resp.headers.get('Content-Type', '').split(';', 1)[0].strip()
-        logging.debug('response content type: %s' % content_type)
+        content_type = resp.headers.get("Content-Type", "").split(";", 1)[0].strip()
+        logging.debug("response content type: %s" % content_type)
 
         if content_type != WEBFINGER_TYPE and content_type not in LEGACY_WEBFINGER_TYPES:
-            raise WebFingerException('Invalid response type from server')
+            raise WebFingerException("Invalid response type from server")
 
         if raw:
             return resp.json()
@@ -124,7 +124,7 @@ def finger(resource, rel=None):
     return WebFingerClient().finger(resource, rel=rel)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     import argparse
 

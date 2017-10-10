@@ -68,7 +68,10 @@ properties
   A dict of URIs and values that provides information about the subject.
 
 links
-  A list of dicts that define external resources for the subject.
+  A list of objects that define external resources for the subject..
+
+rels
+  An ordered dictionary containing a list of objects referenced by the given relation name (or friendly name).
 
 jrd
   A dict of the raw JRD response.

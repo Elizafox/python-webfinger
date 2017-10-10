@@ -1,22 +1,11 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+from copy import deepcopy
+from collections import OrderedDict
 import logging
 import requests
 
-__version__ = "1.0"
-
-RELS = {
-    "activity_streams": "http://activitystrea.ms/spec/1.0",
-    "avatar": "http://webfinger.net/rel/avatar",
-    "hcard": "http://microformats.org/profile/hcard",
-    "open_id": "http://specs.openid.net/auth/2.0/provider",
-    "opensocial": "http://ns.opensocial.org/2008/opensocial/activitystreams",
-    "portable_contacts": "http://portablecontacts.net/spec/1.0",
-    "profile": "http://webfinger.net/rel/profile-page",
-    "webfist": "http://webfist.org/spec/rel",
-    "xfn": "http://gmpg.org/xfn/11",
-}
+__version__ = "2.0"
 
 WEBFINGER_TYPE = "application/jrd+json"
 LEGACY_WEBFINGER_TYPES = ["application/json"]
@@ -25,6 +14,20 @@ UNOFFICIAL_ENDPOINTS = {
     "facebook.com": "facebook-webfinger.appspot.com",
     "twitter.com": "twitter-webfinger.appspot.com",
 }
+
+REL_NAMES = {
+    "http://activitystrea.ms/spec/1.0": "activity_streams",
+    "http://webfinger.net/rel/avatar": "avatar",
+    "http://microformats.org/profile/hcard": "hcard",
+    "http://specs.openid.net/auth/2.0/provider": "open_id",
+    "http://ns.opensocial.org/2008/opensocial/activitystreams": "opensocial",
+    "http://portablecontacts.net/spec/1.0": "portable_contacts",
+    "http://webfinger.net/rel/profile-page": "profile",
+    "http://webfist.org/spec/rel": "webfist",
+    "http://gmpg.org/xfn/11": "xfn",
+}
+
+RELS = {v: k for k, v in REL_NAMES.items()}
 
 logger = logging.getLogger("webfinger")
 
@@ -42,33 +45,41 @@ class WebFingerResponse(object):
     def __init__(self, jrd):
         self.jrd = jrd
 
-    def __getattr__(self, name):
-        if name in RELS:
-            return self.rel(RELS[name])
-        return getattr(self.jrd, name)
+        try:
+            self.subject = jrd["subject"]
+        except IndexError:
+            raise WebFingerException("subject is required in jrd")
 
-    @property
-    def subject(self):
-        return self.jrd.get("subject")
+        self.aliases = jrd.get("aliases", [])
+        self.properties = jrd.get("properties", {})
 
-    @property
-    def aliases(self):
-        return self.jrd.get("aliases", [])
+        self.links = jrd.get("links", [])
 
-    @property
-    def properties(self):
-        return self.jrd.get("properties", {})
+        self.rels = OrderedDict()
+        for link in self.links:
+            rel = link.get("rel", None)
+            rel = REL_NAMES.get(rel, rel)
 
-    @property
-    def links(self):
-        return self.jrd.get("links", [])
+            if rel not in self.rels:
+                rel_list = self.rels[rel] = list()
+            else:
+                rel_list = self.rels[rel]
+
+            rel_list.append(link)
 
     def rel(self, relation, attr="href"):
-        for link in self.links:
-            if link.get("rel") == relation:
-                if attr:
-                    return link.get(attr)
-                return link
+        if relation in REL_NAMES:
+            relation = REL_NAMES[relation]
+
+        if relation not in self.rels:
+            return
+
+        rel = self.rels[relation]
+
+        if attr is not None:
+            return [x[attr] for x in rel]
+
+        return rel
 
 
 class WebFingerClient(object):
@@ -78,7 +89,6 @@ class WebFingerClient(object):
         self.timeout = timeout
 
     def _parse_host(self, resource):
-
         host = resource.split("@")[-1]
 
         if host in UNOFFICIAL_ENDPOINTS and not self.official:
@@ -89,7 +99,6 @@ class WebFingerClient(object):
         return host
 
     def finger(self, resource, host=None, rel=None, raw=False):
-
         if not host:
             host = self._parse_host(resource)
 

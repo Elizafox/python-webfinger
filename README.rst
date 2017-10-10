@@ -9,23 +9,19 @@ WebFinger is a discovery protocol that allows you to find information about peop
 ::
 
     >>> from webfinger import finger
-    >>> wf = finger('acct:eric@konklone.com')
+    >>> wf = finger('acct:Elizafox@mst3k.interlinked.me')
     >>> wf.subject
-    acct:eric@konklone.com
-    >>> wf.avatar
-    https://secure.gravatar.com/avatar/ac3399caecce27cb19d381f61124539e.jpg?s=400
-    >>> wf.profile
-    https://konklone.com
-    >>> wf.properties.get('http://schema.org/name')
-    Eric Mill
-
+    acct:Elizafox@mst3k.interlinked.me
+    >>> wf.rels["profile"]
+    [{'rel': 'http://webfinger.net/rel/profile-page', 'type': 'text/html', 'href': 'https://mst3k.interlinked.me/@Elizafox'}]
+    >>> wf.aliases
+    ['https://mst3k.interlinked.me/@Elizafox', 'https://mst3k.interlinked.me/users/Elizafox']
 
 Installation
 ============
 
-Available on `PyPI as webfinger <https://pypi.python.org/pypi/webfinger>`_.
-
-  pip install webfinger
+::
+    pip install git+https://github.com/Elizafox/webfinger
 
 
 finger

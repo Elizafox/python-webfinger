@@ -11,16 +11,6 @@ class TestHostParsing(unittest.TestCase):
         host = self.client._parse_host('Elizafox@mst3k.interlinked.me')
         self.assertEqual(host, 'mst3k.interlinked.me')
 
-    def test_official_parsing(self):
-        self.client.official = True
-        host = self.client._parse_host('awilcox@twitter.com')
-        self.assertEqual(host, 'twitter.com')
-
-    def test_unofficial_parsing(self):
-        self.client.official = False
-        host = self.client._parse_host('awilcox@twitter.com')
-        self.assertEqual(host, 'twitter-webfinger.appspot.com')
-
 
 class TestWebFingerRequest(unittest.TestCase):
 

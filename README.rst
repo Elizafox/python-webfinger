@@ -116,16 +116,6 @@ Example::
     https://secure.gravatar.com/avatar/ac3399caecce27cb19d381f61124539e.jpg?s=400
 
 
-.. _unofficial endpoints:
-
-Unofficial Endpoints
-====================
-
-While Facebook and Twitter do not officially support WebFinger, the `webfinger-unofficial project <https://github.com/snarfed/webfinger-unofficial>`_ provides a proxy for basic subject information. By default, python-webfinger will attempt to use the unofficial endpoints for facebook.com and twitter.com resource domains. This behavior can be disabled by passing *True* to the *official* parameter::
-
-    >>> wf = finger('acct:konklone@twitter.com', official=True)
-
-
 Dependencies
 ============
 

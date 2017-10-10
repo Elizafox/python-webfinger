@@ -10,11 +10,6 @@ __version__ = "2.0"
 WEBFINGER_TYPE = "application/jrd+json"
 LEGACY_WEBFINGER_TYPES = ["application/json"]
 
-UNOFFICIAL_ENDPOINTS = {
-    "facebook.com": "facebook-webfinger.appspot.com",
-    "twitter.com": "twitter-webfinger.appspot.com",
-}
-
 REL_NAMES = {
     "http://activitystrea.ms/spec/1.0": "activity_streams",
     "http://webfinger.net/rel/avatar": "avatar",
@@ -84,18 +79,11 @@ class WebFingerResponse(object):
 
 class WebFingerClient(object):
 
-    def __init__(self, timeout=None, official=False):
-        self.official = official
+    def __init__(self, timeout=None):
         self.timeout = timeout
 
     def _parse_host(self, resource):
         host = resource.split("@")[-1]
-
-        if host in UNOFFICIAL_ENDPOINTS and not self.official:
-            unofficial_host = UNOFFICIAL_ENDPOINTS[host]
-            logging.debug("host %s is not supported, using unofficial endpoint %s" % (host, unofficial_host))
-            host = unofficial_host
-
         return host
 
     def finger(self, resource, host=None, rel=None, raw=False):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from copy import deepcopy
 from collections import OrderedDict
+
 import logging
 import requests
 
@@ -10,7 +10,7 @@ __version__ = "2.0"
 WEBFINGER_TYPE = "application/jrd+json"
 LEGACY_WEBFINGER_TYPES = ["application/json"]
 
-REL_NAMES = {
+_REL_NAMES = {
     "http://activitystrea.ms/spec/1.0": "activity_streams",
     "http://webfinger.net/rel/avatar": "avatar",
     "http://microformats.org/profile/hcard": "hcard",
@@ -22,7 +22,9 @@ REL_NAMES = {
     "http://gmpg.org/xfn/11": "xfn",
 }
 
-RELS = {v: k for k, v in REL_NAMES.items()}
+# Reverse mapping for convenience
+RELS = {v: k for k, v in _REL_NAMES.items()}
+
 
 logger = logging.getLogger("webfinger")
 
@@ -53,7 +55,7 @@ class WebFingerResponse(object):
         self.rels = OrderedDict()
         for link in self.links:
             rel = link.get("rel", None)
-            rel = REL_NAMES.get(rel, rel)
+            rel = _REL_NAMES.get(rel, rel)
 
             if rel not in self.rels:
                 rel_list = self.rels[rel] = list()
@@ -62,9 +64,9 @@ class WebFingerResponse(object):
 
             rel_list.append(link)
 
-    def rel(self, relation, attr="href"):
-        if relation in REL_NAMES:
-            relation = REL_NAMES[relation]
+    def rel(self, relation, attr=None):
+        if relation in _REL_NAMES:
+            relation = _REL_NAMES[relation]
 
         if relation not in self.rels:
             return

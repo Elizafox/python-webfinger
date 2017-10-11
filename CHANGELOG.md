@@ -4,9 +4,12 @@
 Version 2.2 is in development
 
 ## Major changes
-None yet
+- Properly close HTTP session on `WebFingerClient` deletion
+- Add `close()` method to `WebFingerClient` to close the session
+- Throw correct errors when HTTP request fails
 
 ## Minor changes
+- New `_get()` method in `WebFingerClient` to perform actual HTTP request
 - Classes no longer inherit from object, since Python 3 support is required
 
 # v2.1

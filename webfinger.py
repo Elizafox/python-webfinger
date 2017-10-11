@@ -14,7 +14,7 @@ import logging
 import requests
 
 
-__version__ = "2.0"
+__version__ = "2.1"
 
 
 logger = logging.getLogger("webfinger")
@@ -130,7 +130,7 @@ class WebFingerClient(object):
 
     def _parse_response(self, response):
         """Parse WebFinger response."""
-        return WebFingerResponse(resp.json())
+        return WebFingerResponse(response)
 
     def finger(self, resource, host=None, rel=None, raw=False, params=dict()):
         """Perform a WebFinger lookup.

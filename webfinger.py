@@ -177,6 +177,10 @@ class WebFingerClient:
         """Parse WebFinger response."""
         return WebFingerResponse(response)
 
+    def close(self):
+        """Close HTTP session"""
+        self.session.close()
+
     def finger(self, resource, host=None, rel=None, raw=False, params=dict(),
                headers=dict()):
         """Perform a WebFinger lookup.

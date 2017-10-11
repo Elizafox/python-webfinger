@@ -177,6 +177,13 @@ class WebFingerClient:
         """Parse WebFinger response."""
         return WebFingerResponse(response)
 
+    def _get(self, url, params, headers):
+        """Perform HTTP request."""
+        resp = self.session.get(url, params=params, headers=headers,
+                                timeout=self.timeout, verify=True)
+        resp.raise_for_status()
+        return resp
+
     def close(self):
         """Close HTTP session"""
         self.session.close()
@@ -203,9 +210,15 @@ class WebFingerClient:
         if rel:
             params["rel"] = rel
 
-        resp = self.session.get(url, params=params, headers=headers,
-                                timeout=self.timeout, verify=True)
-        logging.debug("fetching JRD from %s" % resp.url)
+        logging.debug("fetching JRD from %s" % url)
+        try:
+            resp = self._get(url, params, headers)
+        except requests.exceptions.HTTPError as e:
+            raise WebFingerHTTPError("Error with request", str(e)) from e
+        except requests.exceptions.SSLError as e:
+            raise WebFingerNetworkError("SSL error", str(e)) from e
+        except Exception as e:
+            raise WebFingerNetworkError("Could not connect", str(e)) from e
 
         try:
             content_type = resp.headers["Content-Type"]

@@ -22,11 +22,44 @@ logger = logging.getLogger("webfinger")
 
 class WebFingerException(Exception):
     """Exception class for WebFinger errors.
-    
+
     This can be raised due to content encoding or parsing errors.
     """
 
-    pass
+
+class WebFingerContentError(WebFingerException):
+    """There was a problem with the WebFinger content.
+
+    This error may be thrown if the server sends us the incorrect WebFinger
+    content type.
+
+    This is also the base class for WebFingerJRDError.
+    """
+
+
+class WebFingerJRDError(WebFingerContentError):
+    """Error parsing the JRD.
+
+    This could be due to expected elements that are missing, or the response
+    is not a WebFinger response at all.
+    """
+
+
+class WebFingerNetworkError(WebFingerException):
+    """An error occured on the network.
+
+    This could be abrupt termination of the connection, or a connection could
+    not be established.
+
+    This is also the base class for WebFingerHTTPError.
+    """
+
+
+class WebFingerHTTPError(WebFingerNetworkError):
+    """A bad HTTP response was received.
+
+    Any HTTP code except 200 OK will cause this.
+    """
 
 
 class WebFingerResponse(object):
@@ -67,8 +100,8 @@ class WebFingerResponse(object):
 
         try:
             self.subject = jrd["subject"]
-        except IndexError:
-            raise WebFingerException("subject is required in jrd")
+        except KeyError:
+            raise WebFingerJRDError("subject is required in jrd")
 
         self.aliases = jrd.get("aliases", [])
         self.properties = jrd.get("properties", {})
@@ -115,13 +148,22 @@ class WebFingerClient(object):
     WEBFINGER_URL = "https://{host}/.well-known/webfinger"
     USER_AGENT = "Python-Webfinger/{version}".format(version=__version__)
 
-    def __init__(self, timeout=None):
+    def __init__(self, timeout=None, session=None):
         """Create a WebFingerClient instance.
 
         args:
         timeout - default timeout to use (default None)
+        session - requests session to use (default is to create our own)
         """
         self.timeout = timeout
+        if session is None:
+            session = self.session = requests.Session()
+        else:
+            self.session = session
+
+        headers = session.headers
+        headers["User-Agent"] = self.USER_AGENT
+        headers["Accept"] = self.WEBFINGER_TYPE
 
     def _parse_host(self, resource):
         """Parse WebFinger URI."""
@@ -132,7 +174,8 @@ class WebFingerClient(object):
         """Parse WebFinger response."""
         return WebFingerResponse(response)
 
-    def finger(self, resource, host=None, rel=None, raw=False, params=dict()):
+    def finger(self, resource, host=None, rel=None, raw=False, params=dict(),
+               headers=dict()):
         """Perform a WebFinger lookup.
 
         args:
@@ -142,52 +185,53 @@ class WebFingerClient(object):
         raw - return unparsed JRD
         params - HTTP parameters to pass (note: resource and rel will be
                  overwritten)
+        headers - HTTP headers to send with the request
         """
         if not host:
             host = self._parse_host(resource)
 
         url = self.WEBFINGER_URL.format(host=host)
 
-        headers = {
-            "User-Agent": self.USER_AGENT,
-            "Accept": self.WEBFINGER_TYPE,
-        }
-
         params["resource"] = resource
         if rel:
             params["rel"] = rel
 
-        resp = requests.get(url, params=params, headers=headers,
-                            timeout=self.timeout, verify=True)
+        resp = self.session.get(url, params=params, headers=headers,
+                                timeout=self.timeout, verify=True)
         logging.debug("fetching JRD from %s" % resp.url)
 
         try:
             content_type = resp.headers["Content-Type"]
         except KeyError:
-            raise WebFingerException("Invalid Content-Type from server")
+            raise WebFingerContentError("Invalid Content-Type from server",
+                                        content_type)
 
         content_type = content_type.split(";", 1)[0].strip()
         logging.debug("response content type: %s" % content_type)
 
         if (content_type != self.WEBFINGER_TYPE and content_type not in
                 self.LEGACY_WEBFINGER_TYPES):
-            raise WebFingerException("Invalid Content-Type from server")
+            raise WebFingerContentError("Invalid Content-Type from server",
+                                        content_type)
 
         response = resp.json()
         if raw:
-            return response 
+            return response
 
         return self._parse_response(response)
 
 
+_client = WebFingerClient()
+
+
 def finger(resource, rel=None):
     """Invoke finger without creating a WebFingerClient instance.
-    
+
     args:
     resource - resource to look up
     rel - relation to request from the server
     """
-    return WebFingerClient().finger(resource, rel=rel)
+    return _client.finger(resource, rel=rel)
 
 
 if __name__ == "__main__":

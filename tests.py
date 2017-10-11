@@ -38,8 +38,6 @@ class TestWebFingerResponse(unittest.TestCase):
                           "type": "application/activity+json"},
                          {"href": "https://mst3k.interlinked.me/api/salmon/1",
                           "rel": "salmon"},
-                         {"href": "data:application/magic-public-key,RSA.qtNVCDwmZ-4ViUZX5sFpXbMQgcw6giIOSR-V7eSzfbXckjyMeuFkpdQnG7BsYRIvr6Yb0Gs6h799tFS-hM1XYj3KGh9CerEVguowummAOkuXMf__CxgapZ9zbkMkupW-uR8-t_ICoDEC1VSNDjh0swQ4ZJBF6apMxrWYJITjw1cDIoSRUCxo7EwR29fbjdzfv0UbOFMqGG8uRFBTCGW853L2JU_55yVjsQyT0AV9XPdznLKofq8pd5a4XqZbTPgVq-k4haqQfo_GnN9p9LcggITKhWvHBPw3gN8GIM2GYPktz6SmnHGuhqClqdkor6e6CSnpaQj7nEAx8JQo8kdX6Q==.AQAB",
-                          "rel": "magic-public-key"},
                          {"rel": "http://ostatus.org/schema/1.0/subscribe",
                           "template": "https://mst3k.interlinked.me/authorize_follow?acct={uri}"}],
                "subject": "acct:Elizafox@mst3k.interlinked.me"}
@@ -57,7 +55,11 @@ class TestWebFingerResponse(unittest.TestCase):
     def test_invalid_rel(self):
         self.assertEqual(self.response.rel(""), None)
 
-
+    def test_rels_dict(self):
+        self.assertEqual(self.response.rels["profile"],
+                         [{"href": "https://mst3k.interlinked.me/@Elizafox",
+                           "rel": "http://webfinger.net/rel/profile-page",
+                           "type": "text/html"}])
 
 
 if __name__ == "__main__":

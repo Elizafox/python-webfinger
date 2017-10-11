@@ -62,7 +62,7 @@ class WebFingerHTTPError(WebFingerNetworkError):
     """
 
 
-class WebFingerResponse(object):
+class WebFingerResponse:
     """Response that wraps an RD object.
 
     It stores the aliases, properties, and links fields from the JRD. If these
@@ -137,7 +137,7 @@ class WebFingerResponse(object):
         return rel
 
 
-class WebFingerClient(object):
+class WebFingerClient:
     """Class for requesting WebFinger lookups as a client.
 
     You can subclass this for your own needs.

@@ -1,5 +1,14 @@
 # Change log
 
+# v2.2 dev
+Version 2.2 is in development
+
+## Major changes
+None yet
+
+## Minor changes
+- Classes no longer inherit from object, since Python 3 support is required
+
 # v2.1
 Version 2.1 is a bugfix and minor feature update.
 
@@ -25,6 +34,7 @@ Version 2.0 is the first release of webfinger2 (for continuity with the original
 ..- Create new `REL\_NAMES` attribute as a reverse mapping of the `RELS` attribute.
 ..- Create `WEBFINGER\_URL` static attribute in WebFinger client to allow customisation of WebFinger endpoint
 ..- Create `USER\_AGENT` static attribute to allow customisation of WebFinger user agent
+- Require Python 3
 
 ## Minor changes
 - Make `aliases`, `properties`, `links`, and `subject` proper attributes, not properties

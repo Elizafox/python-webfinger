@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 from setuptools import setup
-from webfinger import __version__
+from webfinger import __version__ as version
 
 long_description = open('README.rst').read()
 
 setup(name="webfinger2",
-    version=__version__,
-    py_modules=["webfinger"],
+    version=version,
+    packages=["webfinger"],
     description="Simple Python implementation of WebFinger client protocol",
     author="Jeremy Carbaugh, Elizabeth Myers",
     author_email="elizabeth@interlinked.me",

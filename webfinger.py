@@ -165,6 +165,9 @@ class WebFingerClient:
         headers["User-Agent"] = self.USER_AGENT
         headers["Accept"] = self.WEBFINGER_TYPE
 
+    def __del__(self):
+        self.session.close()
+
     def _parse_host(self, resource):
         """Parse WebFinger URI."""
         host = resource.split("@")[-1]

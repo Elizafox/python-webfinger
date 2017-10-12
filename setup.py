@@ -17,7 +17,7 @@ setup(name="webfinger2",
     install_requires=["requests"],
     platforms=["any"],
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",

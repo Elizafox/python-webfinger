@@ -8,7 +8,7 @@ class TestHostParsing(unittest.TestCase):
         self.client = WebFingerClient()
 
     def test_parsing(self):
-        host = self.client._parse_host("Elizafox@mst3k.interlinked.me")
+        host = self.client.parse_host("Elizafox@mst3k.interlinked.me")
         self.assertEqual(host, "mst3k.interlinked.me")
 
 

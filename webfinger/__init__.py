@@ -10,6 +10,7 @@ __version__ = "3.0.0.dev0"
 
 # Backwards compatibility stubs
 from webfinger.client.requests import WebFingerClient
+from webfinger.objects import WebFingerResponse
 from webfinger.exceptions import *
 
 

@@ -5,7 +5,7 @@ people or things in a standardized way.
 """
 
 
-__version__ = "3.0.0dev0"
+__version__ = "3.0.0.dev0"
 
 
 # Backwards compatibility stubs

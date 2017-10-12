@@ -1,21 +1,24 @@
 # Change log
 
-# v2.2 dev
-Version 2.2 is in development
+# v3.0.0dev0
+Version 3.0.0 is in development
 
 ## Major changes
+- Now follows semantic versioning
+- Restructure package from single file, should be mostly backwards-compatible
+- `\_parse_headers` and `\_parse_host` methods have leading underscore removed
+- Experimental aiohttp-based version; requires aiohttp and Python 3.4 or above
 - Properly close HTTP session on `WebFingerClient` deletion
 - Add `close()` method to `WebFingerClient` to close the session
 - Throw correct errors when HTTP request fails
 
 ## Minor changes
-- New `_get()` method in `WebFingerClient` to perform actual HTTP request
+- New `get()` method in `WebFingerClient` to perform actual HTTP request
 - Classes no longer inherit from object, since Python 3 support is required
+- `BaseWebFingerClient` is now the base class for `WebFingerClient` and can be used as an interface for custom implementations
 
 # v2.1
 Version 2.1 is a bugfix and minor feature update.
-
-You should use this instead of v2.0.
 
 ## Major changes
 - Fix host parsing bug in 2.0

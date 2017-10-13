@@ -34,20 +34,17 @@ class WebFingerClient(BaseWebFingerClient):
         session - requests session to use (default is to create our own)
         """
         self.timeout = timeout
-        if session is None:
-            session = self.session = requests.Session()
-        else:
-            self.session = session
-
-        headers = session.headers
-        headers["User-Agent"] = self.USER_AGENT
-        headers["Accept"] = self.WEBFINGER_TYPE
+        self.session = session
 
     def __del__(self):
         self.close()
 
     def get(self, url, params, headers):
         """Perform HTTP request."""
+        if self.session is None:
+            # Lazily create session
+            self.session = requests.Session()
+
         resp = self.session.get(url, params=params, headers=headers,
                                 timeout=self.timeout, verify=True)
         resp.raise_for_status()
@@ -55,7 +52,8 @@ class WebFingerClient(BaseWebFingerClient):
 
     def close(self):
         """Close HTTP session"""
-        self.session.close()
+        if self.session:
+            self.session.close()
 
     def finger(self, resource, host=None, rel=None, raw=False, params=dict(),
                headers=dict()):
@@ -78,6 +76,9 @@ class WebFingerClient(BaseWebFingerClient):
         params["resource"] = resource
         if rel:
             params["rel"] = rel
+
+        headers["User-Agent"] = self.USER_AGENT
+        headers["Accept"] = self.WEBFINGER_TYPE
 
         logger.debug("fetching JRD from %s" % url)
         try:

@@ -56,7 +56,8 @@ class WebFingerClient(BaseWebFingerClient):
     @asyncio.coroutine
     def close(self):
         """Close HTTP session and perform any cleanup actions"""
-        yield from self.session.close()
+        if self.session:
+            yield from self.session.close()
 
     @asyncio.coroutine
     def finger(self, resource, host=None, rel=None, raw=False, params=dict(),

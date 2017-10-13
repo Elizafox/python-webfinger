@@ -1,9 +1,18 @@
+#!/usr/bin/env python3
+
 import unittest
 from webfinger import finger, WebFingerClient, WebFingerResponse
 
+try:
+    import aiohttp
+except ImportError:
+    aiohttp = None
+else:
+    import asyncio
+    from webfinger.client.aiohttp import WebFingerClient as WebFingerAioHTTPClient
+
 
 class TestHostParsing(unittest.TestCase):
-
     def setUp(self):
         self.client = WebFingerClient()
 
@@ -13,7 +22,6 @@ class TestHostParsing(unittest.TestCase):
 
 
 class TestWebFingerRequest(unittest.TestCase):
-
     def setUp(self):
         self.client = WebFingerClient()
 
@@ -23,7 +31,6 @@ class TestWebFingerRequest(unittest.TestCase):
 
 
 class TestWebFingerResponse(unittest.TestCase):
-
     def setUp(self):
         jrd = {"aliases": ["https://mst3k.interlinked.me/@Elizafox",
                            "https://mst3k.interlinked.me/users/Elizafox"],
@@ -60,6 +67,20 @@ class TestWebFingerResponse(unittest.TestCase):
                          [{"href": "https://mst3k.interlinked.me/@Elizafox",
                            "rel": "http://webfinger.net/rel/profile-page",
                            "type": "text/html"}])
+
+
+@unittest.skipIf(aiohttp is None, "aiohttp is not importable")
+class TestAioHTTPClient(unittest.TestCase):
+    def setUp(self):
+        self.client = WebFingerAioHTTPClient()
+        self.loop = asyncio.get_event_loop()
+
+    def tearDown(self):
+        self.loop.run_until_complete(self.client.close())
+
+    def test_subject(self):
+        wf = self.loop.run_until_complete(self.client.finger("acct:Elizafox@mst3k.interlinked.me"))
+        self.assertEqual(wf.subject, "acct:Elizafox@mst3k.interlinked.me")
 
 
 if __name__ == "__main__":

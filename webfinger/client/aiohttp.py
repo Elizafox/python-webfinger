@@ -36,21 +36,16 @@ class WebFingerClient(BaseWebFingerClient):
                   with the default event loop)
         """
         self.timeout = timeout
-        if session is None:
-            session = self.session = aiohttp.ClientSession()
-        else:
-            self.session = session
-
-        headers = session.headers
-        headers["User-Agent"] = self.USER_AGENT
-        headers["Accept"] = self.WEBFINGER_TYPE
-
-    def __del__(self):
-        self.close()
+        self.session = session
 
     @asyncio.coroutine
     def get(self, url, params, headers):
         """Perform HTTP request."""
+        if self.session is None:
+            # Create transient session (done here and not __init__ to avoid
+            # ResourceWarning)
+            self.session = aiohttp.ClientSession()
+
         with aiohttp.Timeout(self.timeout):
             resp = yield from self.session.get(url, params=params,
                                                headers=headers)
@@ -58,9 +53,10 @@ class WebFingerClient(BaseWebFingerClient):
 
         return resp
 
+    @asyncio.coroutine
     def close(self):
-        """Close HTTP session"""
-        self.session.close()
+        """Close HTTP session and perform any cleanup actions"""
+        yield from self.session.close()
 
     @asyncio.coroutine
     def finger(self, resource, host=None, rel=None, raw=False, params=dict(),
@@ -87,6 +83,9 @@ class WebFingerClient(BaseWebFingerClient):
         if rel:
             params["rel"] = rel
 
+        headers["User-Agent"] = self.USER_AGENT
+        headers["Accept"] = self.WEBFINGER_TYPE
+
         logger.debug("fetching JRD from %s" % url)
         try:
             resp = yield from self.get(url, params, headers)
@@ -104,7 +103,7 @@ class WebFingerClient(BaseWebFingerClient):
             raise WebFingerContentError("Invalid Content-Type from server",
                                         content_type)
 
-        response = yield from resp.json()
+        response = yield from resp.json(content_type=None)
         if raw:
             return response
 

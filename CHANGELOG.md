@@ -1,7 +1,18 @@
 # Change log
 
+# v3.0.0dev1
+Version 3.0.0dev1 is a development marker and not an actual release.
+
+## Major changes
+- Move `RELS` and `REL\_NAMES` out of the `WebFingerResponse` object.
+- New `WebFingerBuilder` class for constructing WebFinger JRDs
+
+## Minor changes
+- Sessions are lazily created in all backends now, if one is not passed in
+- More unit tests
+
 # v3.0.0dev0
-Version 3.0.0 is in development
+Version 3.0.0dev0 is a development marker and not an actual release.
 
 ## Major changes
 - Now follows semantic versioning
@@ -10,6 +21,7 @@ Version 3.0.0 is in development
 - Experimental aiohttp-based version; requires aiohttp and Python 3.4 or above
 - Properly close HTTP session on `WebFingerClient` deletion
 - Add `close()` method to `WebFingerClient` to close the session
+- Add `__del__` methods to backends close session properly
 - Throw correct errors when HTTP request fails
 
 ## Minor changes

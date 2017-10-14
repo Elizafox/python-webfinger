@@ -190,6 +190,9 @@ class WebFingerBuilder:
             # Convert rel into URI
             rel = RELS[rel]
 
+        if not self._is_uri(rel):
+            raise WebFingerJRDError("rel is not URI")
+
         link["rel"] = rel
 
         if type:

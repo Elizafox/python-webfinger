@@ -3,7 +3,7 @@
 
 import unittest
 from webfinger import (finger, WebFingerClient, WebFingerResponse,
-    WebFingerBuilder)
+    WebFingerBuilder, WebFingerJRDError)
 
 
 try:
@@ -109,6 +109,17 @@ class TestWebFingerBuilder(unittest.TestCase):
 
     def test_json(self):
         self.assertEqual(self.response.jrd, self.response_json.jrd)
+
+    def test_invalid_link_rel(self):
+        self.assertRaises(WebFingerJRDError, self.builder.add_link,
+            rel="invalid")
+        self.assertNotIn({"rel": "invalid"}, self.builder.jrd["links"])
+
+    def test_invalid_link_href(self):
+        self.assertRaises(WebFingerJRDError, self.builder.add_link,
+            rel="http://test.example", href="invalid")
+        self.assertNotIn({"rel": "http://test.example", "href": "invalid"},
+            self.builder.jrd["links"])
 
 
 @unittest.skipIf(aiohttp is None, "aiohttp is not importable")

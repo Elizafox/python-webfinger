@@ -52,6 +52,9 @@ class WebFingerResponse:
         args:
         jrd - the JRD of the WebFinger response.
         """
+        if isinstance(jrd, str):
+            jrd = json.loads(jrd)
+
         self.jrd = jrd
 
         try:

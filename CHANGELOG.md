@@ -4,8 +4,9 @@
 Version 3.0.0dev1 is a development marker and not an actual release.
 
 ## Major changes
-- Move `RELS` and `REL\_NAMES` out of the `WebFingerResponse` object.
+- Move `RELS` and `REL\_NAMES` out of the `WebFingerResponse` object
 - New `WebFingerBuilder` class for constructing WebFinger JRDs
+- `webfinger.objects` has been split into the `response` and `builder` submodules
 
 ## Minor changes
 - Sessions are lazily created in all backends now, if one is not passed in

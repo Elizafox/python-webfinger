@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
+
 import unittest
-from webfinger import finger, WebFingerClient, WebFingerResponse
+from webfinger import (finger, WebFingerClient, WebFingerResponse,
+    WebFingerBuilder)
+
 
 try:
     import aiohttp
@@ -54,10 +57,12 @@ class TestWebFingerResponse(unittest.TestCase):
         self.assertEqual(self.response.subject, "acct:Elizafox@mst3k.interlinked.me")
 
     def test_rel_longname(self):
-        self.assertEqual(self.response.rel("http://webfinger.net/rel/profile-page", "href"), ["https://mst3k.interlinked.me/@Elizafox"])
+        rel = self.response.rel("http://webfinger.net/rel/profile-page", "href")
+        self.assertEqual(rel, ["https://mst3k.interlinked.me/@Elizafox"])
 
     def test_rel_shortname(self):
-        self.assertEqual(self.response.rel("profile", "href"), ["https://mst3k.interlinked.me/@Elizafox"])
+        rel = self.response.rel("profile", "href")
+        self.assertEqual(rel, ["https://mst3k.interlinked.me/@Elizafox"])
 
     def test_invalid_rel(self):
         self.assertEqual(self.response.rel(""), None)
@@ -67,6 +72,39 @@ class TestWebFingerResponse(unittest.TestCase):
                          [{"href": "https://mst3k.interlinked.me/@Elizafox",
                            "rel": "http://webfinger.net/rel/profile-page",
                            "type": "text/html"}])
+
+
+class TestWebFingerBuilder(unittest.TestCase):
+    def setUp(self):
+        self.builder = WebFingerBuilder("acct:Elizafox@mst3k.interlinked.me")
+
+        self.builder.add_property("http://example.com", "test")
+
+        self.builder.add_link(rel="profile", type="text/html",
+            href="https://mst3k.interlinked.me/users/Elizafox.atom",
+            misc={"test": "test extra param"})
+
+        self.builder.add_alias("http://example.org")
+
+        self.response = WebFingerResponse(self.builder.jrd)
+
+    def test_subject(self):
+        self.assertEqual(self.response.subject,
+            "acct:Elizafox@mst3k.interlinked.me")
+
+    def test_link(self):
+        self.assertEqual(self.response.links,
+            [{"rel": "http://webfinger.net/rel/profile-page",
+              "type": "text/html",
+              "href": "https://mst3k.interlinked.me/users/Elizafox.atom",
+              "test": "test extra param"}])
+
+    def test_properties(self):
+        self.assertEqual(self.response.properties,
+            {"http://example.com": "test"})
+
+    def test_alias(self):
+        self.assertEqual(self.response.aliases, ["http://example.org"])
 
 
 @unittest.skipIf(aiohttp is None, "aiohttp is not importable")

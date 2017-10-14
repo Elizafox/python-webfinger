@@ -86,6 +86,8 @@ class TestWebFingerBuilder(unittest.TestCase):
 
         self.builder.add_alias("http://example.org")
 
+        self.builder.add_misc("test-extra", "123")
+
         self.response = WebFingerResponse(self.builder.jrd)
         self.response_json = WebFingerResponse(self.builder.to_json())
 
@@ -107,6 +109,9 @@ class TestWebFingerBuilder(unittest.TestCase):
     def test_alias(self):
         self.assertEqual(self.response.aliases, ["http://example.org"])
 
+    def test_misc(self):
+        self.assertEqual(self.response.jrd["test-extra"], "123")
+
     def test_json(self):
         self.assertEqual(self.response.jrd, self.response_json.jrd)
 
@@ -120,6 +125,31 @@ class TestWebFingerBuilder(unittest.TestCase):
             rel="http://test.example", href="invalid")
         self.assertNotIn({"rel": "http://test.example", "href": "invalid"},
             self.builder.jrd["links"])
+
+    def test_invalid_link_type(self):
+        self.assertRaises(WebFingerJRDError, self.builder.add_link,
+            rel="http://test.example", type=4)
+        self.assertNotIn({"rel": "http://test.example", "type": 4},
+            self.builder.jrd["links"])
+
+    def test_invalid_property_key_number(self):
+        self.assertRaises(WebFingerJRDError, self.builder.add_property,
+            4, "invalid")
+        self.assertNotIn(4, self.builder.jrd["properties"])
+
+    def test_invalid_property_key_not_uri(self):
+        self.assertRaises(WebFingerJRDError, self.builder.add_property,
+            "test", "invalid")
+        self.assertNotIn("test", self.builder.jrd["properties"])
+
+    def test_invalid_property_value(self):
+        self.assertRaises(WebFingerJRDError, self.builder.add_property,
+            "http://valid.example", 4)
+        self.assertNotIn("http://valid.example", self.builder.jrd["properties"])
+
+    def test_property_none(self):
+        self.builder.add_property("http://uri.example", None)
+        self.assertIn("http://uri.example", self.builder.jrd["properties"])
 
 
 @unittest.skipIf(aiohttp is None, "aiohttp is not importable")

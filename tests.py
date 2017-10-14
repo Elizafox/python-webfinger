@@ -87,6 +87,7 @@ class TestWebFingerBuilder(unittest.TestCase):
         self.builder.add_alias("http://example.org")
 
         self.response = WebFingerResponse(self.builder.jrd)
+        self.response_json = WebFingerResponse(self.builder.to_json())
 
     def test_subject(self):
         self.assertEqual(self.response.subject,
@@ -105,6 +106,9 @@ class TestWebFingerBuilder(unittest.TestCase):
 
     def test_alias(self):
         self.assertEqual(self.response.aliases, ["http://example.org"])
+
+    def test_json(self):
+        self.assertEqual(self.response.jrd, self.response_json.jrd)
 
 
 @unittest.skipIf(aiohttp is None, "aiohttp is not importable")

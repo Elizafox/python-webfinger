@@ -75,11 +75,11 @@ class WebFingerBuilder:
         if not isinstance(uri, str):
             raise WebFingerJRDError("uri must be a string")
 
-        if not isinstance(value, (str, None)):
-            raise WebFingerJRDError("value for uri must be a string or None")
-
         if not self._is_uri(uri):
             raise WebFingerJRDError("uri must be a URI")
+
+        if not isinstance(value, (str, type(None))):
+            raise WebFingerJRDError("value for uri must be a string or None")
 
         self.jrd["properties"][uri] = value
 
@@ -147,7 +147,7 @@ class WebFingerBuilder:
                     raise WebFingerJRDError("property keys must be strings",
                                             k)
 
-                if not isinstance(v, (str, None)):
+                if not isinstance(v, (str, type(None))):
                     raise WebFingerJRDError(
                         "property values must be either strings or None", v)
 

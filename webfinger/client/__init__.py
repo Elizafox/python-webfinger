@@ -10,7 +10,7 @@ for other implementations.
 import abc
 
 from webfinger import __version__ as version
-from webfinger.objects import WebFingerResponse
+from webfinger.objects.response import WebFingerResponse
 
 
 class BaseWebFingerClient(abc.ABC):

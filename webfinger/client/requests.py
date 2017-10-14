@@ -12,7 +12,7 @@ import requests
 import logging
 
 from webfinger.client import BaseWebFingerClient
-from webfinger.objects import WebFingerResponse
+from webfinger.objects.response import WebFingerResponse
 from webfinger.exceptions import WebFingerHTTPError, WebFingerNetworkError, \
     WebFingerJRDError, WebFingerContentError
 

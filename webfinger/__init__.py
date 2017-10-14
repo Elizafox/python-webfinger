@@ -24,7 +24,9 @@ __version__ = "3.0.0.dev1"
 
 from webfinger.client import BaseWebFingerClient
 from webfinger.client.requests import WebFingerClient
-from webfinger.objects import WebFingerResponse, WebFingerBuilder
+from webfinger.objects import RELS, REL_NAMES
+from webfinger.objects.response import WebFingerResponse
+from webfinger.objects.builder import WebFingerBuilder
 from webfinger.exceptions import *
 
 

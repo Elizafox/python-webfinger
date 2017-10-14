@@ -164,7 +164,8 @@ class WebFingerBuilder:
 
         self.jrd["properties"][uri] = value
 
-    def add_link(self, rel, type, href, titles, properties, misc=None):
+    def add_link(self, rel, *, type=None, href=None, titles=None,
+                 properties=None, misc=None):
         """Add a link to the JRD.
 
         args:

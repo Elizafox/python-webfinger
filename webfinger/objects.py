@@ -53,14 +53,19 @@ class WebFingerResponse:
         jrd - the JRD of the WebFinger response.
         """
         if isinstance(jrd, str):
-            jrd = json.loads(jrd)
+            try:
+                jrd = json.loads(jrd)
+            except Exception as e:
+                raise WebFingerError("error parsing JRD") from e
 
         self.jrd = jrd
 
         try:
             self.subject = jrd["subject"]
         except KeyError:
-            raise WebFingerJRDError("subject is required in jrd")
+            raise WebFingerJRDError("subject is required in JRD")
+        except Exception as e:
+            raise WebFingerJRDError("malformed JRD") from e
 
         self.aliases = jrd.get("aliases", [])
         self.properties = jrd.get("properties", {})

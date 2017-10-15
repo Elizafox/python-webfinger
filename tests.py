@@ -2,8 +2,8 @@
 
 
 import unittest
-from webfinger import (finger, WebFingerClient, WebFingerResponse,
-    WebFingerBuilder, WebFingerJRDError)
+from webfinger import (finger, WebFingerClient, WebFingerJRD,
+    WebFingerJRDError)
 
 
 try:
@@ -51,7 +51,7 @@ class TestWebFingerResponse(unittest.TestCase):
                          {"rel": "http://ostatus.org/schema/1.0/subscribe",
                           "template": "https://mst3k.interlinked.me/authorize_follow?acct={uri}"}],
                "subject": "acct:Elizafox@mst3k.interlinked.me"}
-        self.response = WebFingerResponse(jrd)
+        self.response = WebFingerJRD(jrd)
 
     def test_subject(self):
         self.assertEqual(self.response.subject, "acct:Elizafox@mst3k.interlinked.me")
@@ -67,16 +67,16 @@ class TestWebFingerResponse(unittest.TestCase):
     def test_invalid_rel(self):
         self.assertEqual(self.response.rel(""), None)
 
-    def test_rels_dict(self):
-        self.assertEqual(self.response.rels["profile"],
+    def test_link_rels_dict(self):
+        self.assertEqual(self.response.link_rels["profile"],
                          [{"href": "https://mst3k.interlinked.me/@Elizafox",
                            "rel": "http://webfinger.net/rel/profile-page",
                            "type": "text/html"}])
 
 
-class TestWebFingerBuilder(unittest.TestCase):
+class TestWebFingerBuild(unittest.TestCase):
     def setUp(self):
-        self.builder = WebFingerBuilder("acct:Elizafox@mst3k.interlinked.me")
+        self.builder = WebFingerJRD.build("acct:Elizafox@mst3k.interlinked.me")
 
         self.builder.add_property("http://example.com", "test")
 
@@ -88,8 +88,8 @@ class TestWebFingerBuilder(unittest.TestCase):
 
         self.builder.add_misc("test-extra", "123")
 
-        self.response = WebFingerResponse(self.builder.jrd)
-        self.response_json = WebFingerResponse(self.builder.to_json())
+        self.response = WebFingerJRD(self.builder.jrd)
+        self.response_json = WebFingerJRD(self.builder.to_json())
 
     def test_subject(self):
         self.assertEqual(self.response.subject,

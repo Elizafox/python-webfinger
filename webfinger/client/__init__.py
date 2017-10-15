@@ -10,7 +10,7 @@ for other implementations.
 import abc
 
 from webfinger import __version__ as version
-from webfinger.objects.response import WebFingerResponse
+from webfinger.objects.jrd import WebFingerJRD
 
 
 class BaseWebFingerClient(abc.ABC):
@@ -31,7 +31,7 @@ class BaseWebFingerClient(abc.ABC):
 
     def parse_response(self, response):
         """Parse WebFinger response."""
-        return WebFingerResponse(response)
+        return WebFingerJRD(response)
 
     @abc.abstractmethod
     def get(self, url, params, headers):

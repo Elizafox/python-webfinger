@@ -1,5 +1,15 @@
 # Change log
 
+# v3.0.0dev2
+Version 3.0.0dev2 is a development marker and not an actual release.
+
+## Major changes
+- `WebFingerResponse` and `WebFingerBuilder` folded into single `WebFingerJRD` object
+- `WebFingerJRD.links` are now `WebFingerLink` objects, which have attribute-based and key-based access and should not differ significantly for most usage
+
+## Minor changes
+- `WebFingerBuilder._is_uri` is now in `webfinger.utils.is_uri`, although this should be considered a private API
+
 # v3.0.0dev1
 Version 3.0.0dev1 is a development marker and not an actual release.
 

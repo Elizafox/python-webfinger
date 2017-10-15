@@ -21,12 +21,14 @@ class BaseWebFingerClient(abc.ABC):
     WEBFINGER_URL = "https://{host}/.well-known/webfinger"
     USER_AGENT = "Python-Webfinger/{version}".format(version=version)
     
-    def parse_host(self, resource):
+    @staticmethod
+    def parse_host(resource):
         """Parse WebFinger URI."""
         host = resource.split("@")[-1]
         return host
 
-    def parse_response(self, response):
+    @staticmethod
+    def parse_response(response):
         """Parse WebFinger response."""
         return WebFingerJRD(response)
 

@@ -9,6 +9,7 @@ Version 3.0.0dev2 is a development marker and not an actual release.
 
 ## Minor changes
 - `WebFingerBuilder._is_uri` is now in `webfinger.utils.is_uri`, although this should be considered a private API
+- `BaseWebFingerClient.parse_*` methods are now static methods
 
 # v3.0.0dev1
 Version 3.0.0dev1 is a development marker and not an actual release.

@@ -22,7 +22,8 @@ Installation
 
 ::
 
-    pip install git+https://github.com/Elizafox/webfinger
+    pip install git+https://github.com/Elizafox/python-webfinger  # Latest
+    pip install webfinger2  # Official releases
 
 
 finger

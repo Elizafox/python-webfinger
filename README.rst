@@ -21,6 +21,7 @@ Installation
 ============
 
 ::
+
     pip install git+https://github.com/Elizafox/webfinger
 
 

@@ -37,13 +37,13 @@ finger(resource, rel=None)
 WebFinger Client
 ================
 
-WebFingerClient(timeout=None, official=False)
-    Instantiates a client object. The optional *timeout* parameter specifies the HTTP request timeout. The optional *official* parameter is a boolean that determines if the client will use `unofficial endpoints`_.
+The default WebFinger client uses `requests`_ to perform its work. An `aiohttp`_ backend is also available in `webfinger.clients.aiohttp.WebFingerClient`.
+
+WebFingerClient(timeout=None, session=None)
+    Instantiates a client object. The optional *timeout* parameter specifies the HTTP request timeout. The optional *session* parameter specifies what `requests`_ to use.
 
 finger(resource, host=None, rel=None, raw=False)
     The client *finger* method prepares and executes the WebFinger request. *resource* and *rel* are the same as the parameters on the standalone *finger* method. *host* should only be specified if you want to connect to a host other than the host in the resource parameter. Otherwise, this method extracts the host from the *resource* parameter. *raw* is a boolean that determines if the method returns a WebFingerResponse object or the raw JRD response as a dict.
-
-    If the *host* parameter is passed to this method, unofficial endpoints are ignored. You're asking for a specific host so who am I to disagree?
 
 
 WebFinger Response

@@ -44,7 +44,7 @@ WebFingerClient(timeout=None, session=None)
     Instantiates a client object. The optional *timeout* parameter specifies the HTTP request timeout. The optional *session* parameter specifies what `requests`_ to use.
 
 finger(resource, host=None, rel=None, raw=False)
-    The client *finger* method prepares and executes the WebFinger request. *resource* and *rel* are the same as the parameters on the standalone *finger* method. *host* should only be specified if you want to connect to a host other than the host in the resource parameter. Otherwise, this method extracts the host from the *resource* parameter. *raw* is a boolean that determines if the method returns a WebFingerResponse object or the raw JRD response as a dict.
+    The client *finger* method prepares and executes the WebFinger request. *resource* and *rel* are the same as the parameters on the standalone *finger* method. *host* should only be specified if you want to connect to a host other than the host in the resource parameter. Otherwise, this method extracts the host from the *resource* parameter. *raw* is a boolean that determines if the method returns a WebFingerJRD object or the raw JRD response as a dict.
 
 
 WebFinger Response
@@ -53,7 +53,7 @@ WebFinger Response
 The WebFinger response object provides handy properties for easy access and the raw JRD response. Read the `spec for specifics of the JRD response <http://tools.ietf.org/html/rfc7033#section-4.4>`_.
 
 
-Properties
+Attributes
 ----------
 
 subject
@@ -68,7 +68,7 @@ properties
 links
   A list of objects that define external resources for the subject..
 
-rels
+link_rels
   An ordered dictionary containing a list of objects referenced by the given relation name (or friendly name).
 
 jrd

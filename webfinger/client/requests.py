@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 """WebFinger client based around the requests library.
 
 This module is probably what you want, if all you want is a working WebFinger

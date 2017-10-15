@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 """WebFinger library objects.
 
 This contains objects returned and used by the WebFinger library, including

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 """WebFinger client implementation.
 
 The top-level module contains BaseWebFingerClient, which is a basic interface

@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 """WebFinger JRD object.
 
 This class contains the WebFinger JRD object, which can contain a response to

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 """WebFinger link object.
 
 The links attr of the RD has numerous attrs, which are useful to

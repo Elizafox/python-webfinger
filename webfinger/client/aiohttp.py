@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 """WebFinger client based around the aiohttp library.
 
 This module requires Python 3.4 or later and aiohttp.

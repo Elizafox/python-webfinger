@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 """WebFinger exceptions.
 
 These are the exceptions raised by the WebFinger package.

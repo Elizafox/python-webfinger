@@ -121,6 +121,7 @@ Dependencies
 ============
 
 * `requests <https://pypi.python.org/pypi/requests>`_
+* `aiohttp <http://aiohttp.readthedocs.io/en/stable/>`_
 
 
 License

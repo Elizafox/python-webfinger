@@ -14,7 +14,7 @@ setup(name="webfinger2",
     license='BSD',
     url="http://github.com/jcarbaugh/python-webfinger/",
     long_description=long_description,
-    install_requires=["requests"],
+    install_requires=["requests", "defusedxml"],
     platforms=["any"],
     classifiers=[
         "Development Status :: 3 - Alpha",

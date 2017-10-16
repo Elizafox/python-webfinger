@@ -7,8 +7,11 @@ a request, or be used to build a response.
 
 import json
 
+from xml.etree import ElementTree
 from collections import OrderedDict
 from collections.abc import Mapping
+
+from defusedxml import ElementTree as DefusedElementTree
 
 from webfinger.exceptions import WebFingerJRDError
 from webfinger.objects import RELS, REL_NAMES
@@ -204,6 +207,62 @@ class WebFingerJRD:
     def to_json(self):
         """Convert JRD into a json string."""
         return json.dumps(self.jrd)
+
+    def to_xml(self):
+        """Convert JRD into XML"""
+        # TODO in this function - raise something besides WebFingerJRDError!
+
+        def serialise_property(node, properties):
+            for tag, value in properties.items():
+                elem = ElementTree.SubElement("Property")
+                if value is not None:
+                    elem.text = value
+                else:
+                    elem.attrib["xsi:nil"] = "true"
+
+        tree = ElementTree.ElementTree()
+        root = tree.start("XRD",
+            {"xmlns": "http://docs.oasis-open.org/ns/xri/xrd-1.0"})
+
+        subject = ElementTree.SubElement(root, "Subject")
+        subject.text = self.subject
+
+        for a in self.aliases:
+            alias = ElementTree.SubElement(root, "Alias")
+            alias.text = a
+
+        serialise_property(root, self.properties)
+
+        for l in self.links:
+            link = ElementTree.SubElement(root, "Link")
+
+            for elem, attr in l.items():
+                if isinstance(attr, str):
+                    # Set as simple attribute
+                    link.attrib[elem] = attr
+                elif isinstance(attr, Mapping):
+                    # Serialise as a property
+                    if elem.lower() == "titles":
+                        # Serialise as titles
+                        for title, language in v.items():
+                            title_elem = ElementTree.SubElement(link, "Title",
+                                {"xml:lang": language})
+                            title_elem.text = title
+                    elif elem.lower() == "properties":
+                        # Serialise properties
+                        serialise_property(link, attr)
+                    else:
+                        raise WebFingerJRDError(
+                            "Can't serialise link attribute", elem, attr)
+                else:
+                    raise WebFingerJRDError("Can't serialise type into XML",
+                        type(attr), attr)
+
+        # TODO - serialise other elements
+        try:
+            return ElementTree.tostring(tree.close(), encoding="unicode")
+        except Exception as e:
+            raise WebFingerJRDError("Could not serialise into XML", e) from e
 
     def __str__(self):
         return self.to_json()

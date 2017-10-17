@@ -71,6 +71,11 @@ class WebFingerJRD:
 
     @classmethod
     def from_json(cls, text):
+        """Initalise JRD with json plaintext.
+
+        args:
+        text - json text to parse. Must be a string.
+        """
         try:
             jrd = json.loads(text)
         except Exception as e:
@@ -80,6 +85,11 @@ class WebFingerJRD:
 
     @classmethod
     def from_xml(cls, text):
+        """Initalise JRD with XML plaintext.
+        
+        args:
+        text - XML text to parse. Must be a string.
+        """
         XMLNSMAP = {"XRD": 'http://docs.oasis-open.org/ns/xri/xrd-1.0'}
 
         def parse_properties(node):
@@ -292,7 +302,7 @@ class WebFingerJRD:
         return json.dumps(self.jrd)
 
     def to_xml(self):
-        """Convert JRD into XML"""
+        """Convert JRD into XML."""
         def serialise_property(node, properties):
             for tag, value in properties.items():
                 elem = ElementTree.SubElement("Property", {"type": tag})

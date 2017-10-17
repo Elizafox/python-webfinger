@@ -39,13 +39,8 @@ class WebFingerJRD:
         args:
         jrd - the JRD of the WebFinger response.
         """
-        if isinstance(jrd, str):
-            try:
-                jrd = json.loads(jrd)
-            except Exception as e:
-                raise WebFingerJRDError("error parsing JRD") from e
-        elif not isinstance(jrd, Mapping):
-            raise WebFingerJRDError("JRD must be a mapping or a string")
+        if not isinstance(jrd, Mapping):
+            raise WebFingerJRDError("JRD must be a Mapping")
 
         self.jrd = jrd
 
@@ -73,6 +68,90 @@ class WebFingerJRD:
                 rel_list = self.link_rels[rel]
 
             rel_list.append(link)
+
+    @classmethod
+    def from_json(cls, text):
+        try:
+            jrd = json.loads(text)
+        except Exception as e:
+            raise WebFingerJRDError("error parsing JRD") from e
+
+        return cls(jrd)
+
+    @classmethod
+    def from_xml(cls, text):
+        def parse_properties(node):
+            ret = {}
+            properties = node.findall("Property")
+            if not properties:
+                return ret
+
+            for property in properties:
+                if "type" not in property.attrib:
+                    raise WebFingerJRDError("type is required with property")
+
+                key = property.attrib["type"]
+                has_nil = property.attrib.get("xsi:nil", "").lower()
+                if has_nil and has_nil == "true":
+                    value = None
+                else:
+                    value = property.text
+
+                ret[key] = value
+
+            return ret
+
+        try:
+            root = DefusedElementTree.fromstring(text)
+        except Exception as e:
+            # TODO - better error
+            raise WebFingerJRDERror("error parsing XRD") from e
+
+        subject = root.find("Subject")
+        if subject is None:
+            raise WebFingerJRDError("subject is required")
+
+        jrd = {"subject": subject.text}
+
+        aliases = root.findall("Alias")
+        if aliases:
+            aliases_jrd = jrd["aliases"] = []
+            for alias in aliases:
+                if not alias.text:
+                    # TODO - better error
+                    raise WebFingerJRDError("alias had no content")
+                aliases_jrd.append(alias.text)
+
+        properties = parse_properties(root)
+        if properties:
+            jrd["properties"] = properties
+
+        links = root.findall("Link")
+        if links:
+            links_jrd = jrd["links"] = []
+            for link in links:
+                link_jrd = {}
+
+                # Retrieve basic attributes
+                for attrib, value in link.attrib.items():
+                    link_jrd[attrib] = value
+
+                # Properties
+                properties = parse_properties(link)
+                if properties:
+                    link_jrd["properties"] = properties
+
+                # Titles
+                titles = link.findall("Title")
+                if titles:
+                    titles_jrd = jrd["titles"] = {}
+                    for title in titles:
+                        lang = title.attrib.get("xml:lang", "und")
+                        title = title.text
+                        titles_jrd[title] = lang
+
+        # TODO - any other elements
+        return cls(jrd)
 
     @classmethod
     def build(cls, subject):
@@ -210,11 +289,9 @@ class WebFingerJRD:
 
     def to_xml(self):
         """Convert JRD into XML"""
-        # TODO in this function - raise something besides WebFingerJRDError!
-
         def serialise_property(node, properties):
             for tag, value in properties.items():
-                elem = ElementTree.SubElement("Property")
+                elem = ElementTree.SubElement("Property", {"type": tag})
                 if value is not None:
                     elem.text = value
                 else:
@@ -236,6 +313,7 @@ class WebFingerJRD:
         for l in self.links:
             link = ElementTree.SubElement(root, "Link")
 
+            # XXX this is all really ugly!
             for elem, attr in l.items():
                 if isinstance(attr, str):
                     # Set as simple attribute
@@ -252,16 +330,20 @@ class WebFingerJRD:
                         # Serialise properties
                         serialise_property(link, attr)
                     else:
+                        # TODO - better error
                         raise WebFingerJRDError(
                             "Can't serialise link attribute", elem, attr)
                 else:
+                    # TODO - better error
                     raise WebFingerJRDError("Can't serialise type into XML",
                         type(attr), attr)
 
         # TODO - serialise other elements
+
         try:
             return ElementTree.tostring(tree.close(), encoding="unicode")
         except Exception as e:
+            # TODO - better error
             raise WebFingerJRDError("Could not serialise into XML", e) from e
 
     def __str__(self):

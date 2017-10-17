@@ -89,7 +89,7 @@ class TestWebFingerBuild(unittest.TestCase):
         self.builder.add_misc("test-extra", "123")
 
         self.response = WebFingerJRD(self.builder.jrd)
-        self.response_json = WebFingerJRD(self.builder.to_json())
+        self.response_json = WebFingerJRD.from_json(self.builder.to_json())
 
     def test_subject(self):
         self.assertEqual(self.response.subject,

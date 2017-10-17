@@ -86,7 +86,7 @@ class WebFingerJRD:
     @classmethod
     def from_xml(cls, text):
         """Initalise JRD with XML plaintext.
-        
+
         args:
         text - XML text to parse. Must be a string.
         """
@@ -184,7 +184,7 @@ class WebFingerJRD:
             subject = "acct:" + subject
 
         return cls({"subject": subject})
-    
+
     def rel(self, relation, attr=None):
         """Return a given relation, with an optional attribute.
 
@@ -283,13 +283,13 @@ class WebFingerJRD:
 
         if properties:
             args["properties"] = properties
-        
+
         if not isinstance(misc, Mapping):
             raise WebFingerJRDError("misc must be a mapping")
 
         args.update(misc)
         args.update(kwargs)
-        
+
         self.links.append(WebFingerLink(**args))
         self.jrd["links"].append(args)
 

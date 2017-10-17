@@ -200,6 +200,47 @@ class TestWebFingerJSON(unittest.TestCase):
              "https://mst3k.interlinked.me/users/Elizafox"])
 
 
+class TestWebFingerXML(unittest.TestCase):
+    def setUp(self):
+        xrd = \
+        '<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">' \
+        '    <Subject>acct:Elizafox@mst3k.interlinked.me</Subject>' \
+        '    <Alias>https://mst3k.interlinked.me/@Elizafox</Alias>' \
+        '    <Alias>https://mst3k.interlinked.me/users/Elizafox</Alias>' \
+        '    <Property type="https://example.org/test">testprop</Property>' \
+        '    <Property type="https://example.org/test2">testprop2</Property>' \
+        '    <Link href="https://mst3k.interlinked.me/@Elizafox"' \
+        '        rel="http://webfinger.net/rel/profile-page"' \
+        '        type="text/html"/>' \
+        '    <Link href="https://mst3k.interlinked.me/users/Elizafox"' \
+        '        rel="self"' \
+        '        type="application/activity+json"/>' \
+        '</XRD>'
+
+        self.response = WebFingerJRD.from_xml(xrd)
+
+    def test_subject(self):
+        self.assertEqual(self.response.subject, "acct:Elizafox@mst3k.interlinked.me")
+
+    def test_properties(self):
+        self.assertEqual(self.response.properties,
+            {"https://example.org/test": "testprop",
+             "https://example.org/test2": "testprop2"})
+
+    def test_links(self):
+        self.assertEqual(self.response.jrd["links"],
+            [{"href": "https://mst3k.interlinked.me/@Elizafox",
+              "rel": "http://webfinger.net/rel/profile-page",
+              "type": "text/html"},
+             {"href": "https://mst3k.interlinked.me/users/Elizafox",
+              "rel": "self",
+              "type": "application/activity+json"}])
+
+    def test_aliases(self):
+        self.assertEqual(self.response.aliases,
+            ["https://mst3k.interlinked.me/@Elizafox",
+             "https://mst3k.interlinked.me/users/Elizafox"])
+
 @unittest.skipIf(aiohttp is None, "aiohttp is not importable")
 class TestAioHTTPClient(unittest.TestCase):
     def setUp(self):

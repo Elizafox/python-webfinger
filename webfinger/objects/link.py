@@ -26,7 +26,7 @@ class WebFingerLink(MutableMapping):
 
         args:
         rel - relation of the link; this is required
-        
+
         keyword arguments:
         type - expected MIME type of the link
         href - URI for the link

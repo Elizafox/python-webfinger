@@ -15,12 +15,12 @@ class BaseWebFingerClient(abc.ABC):
 
     All WebFinger clients implement at least this interface.
     """
-    
+
     WEBFINGER_TYPE = "application/jrd+json"
     LEGACY_WEBFINGER_TYPES = ["application/json"]
     WEBFINGER_URL = "https://{host}/.well-known/webfinger"
     USER_AGENT = "Python-Webfinger/{version}".format(version=version)
-    
+
     @staticmethod
     def parse_host(resource):
         """Parse WebFinger URI."""

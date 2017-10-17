@@ -80,9 +80,11 @@ class WebFingerJRD:
 
     @classmethod
     def from_xml(cls, text):
+        XMLNSMAP = {"XRD": 'http://docs.oasis-open.org/ns/xri/xrd-1.0'}
+
         def parse_properties(node):
             ret = {}
-            properties = node.findall("Property")
+            properties = node.findall("XRD:Property", XMLNSMAP)
             if not properties:
                 return ret
 
@@ -107,13 +109,13 @@ class WebFingerJRD:
             # TODO - better error
             raise WebFingerJRDERror("error parsing XRD") from e
 
-        subject = root.find("Subject")
+        subject = root.find("XRD:Subject", XMLNSMAP)
         if subject is None:
             raise WebFingerJRDError("subject is required")
 
         jrd = {"subject": subject.text}
 
-        aliases = root.findall("Alias")
+        aliases = root.findall("XRD:Alias", XMLNSMAP)
         if aliases:
             aliases_jrd = jrd["aliases"] = []
             for alias in aliases:
@@ -126,7 +128,7 @@ class WebFingerJRD:
         if properties:
             jrd["properties"] = properties
 
-        links = root.findall("Link")
+        links = root.findall("XRD:Link", XMLNSMAP)
         if links:
             links_jrd = jrd["links"] = []
             for link in links:
@@ -142,13 +144,15 @@ class WebFingerJRD:
                     link_jrd["properties"] = properties
 
                 # Titles
-                titles = link.findall("Title")
+                titles = link.findall("XRD:Title", XMLNSMAP)
                 if titles:
                     titles_jrd = jrd["titles"] = {}
                     for title in titles:
                         lang = title.attrib.get("xml:lang", "und")
                         title = title.text
                         titles_jrd[title] = lang
+
+                links_jrd.append(link_jrd)
 
         # TODO - any other elements
         return cls(jrd)
@@ -297,7 +301,7 @@ class WebFingerJRD:
                 else:
                     elem.attrib["xsi:nil"] = "true"
 
-        tree = ElementTree.ElementTree()
+        tree = ElementTree.TreeBuilder()
         root = tree.start("XRD",
             {"xmlns": "http://docs.oasis-open.org/ns/xri/xrd-1.0"})
 

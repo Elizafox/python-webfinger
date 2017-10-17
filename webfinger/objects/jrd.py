@@ -305,7 +305,7 @@ class WebFingerJRD:
         """Convert JRD into XML."""
         def serialise_property(node, properties):
             for tag, value in properties.items():
-                elem = ElementTree.SubElement("Property", {"type": tag})
+                elem = ElementTree.SubElement(node, "Property", {"type": tag})
                 if value is not None:
                     elem.text = value
                 else:

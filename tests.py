@@ -89,7 +89,6 @@ class TestWebFingerBuild(unittest.TestCase):
         self.builder.add_misc("test-extra", "123")
 
         self.response = WebFingerJRD(self.builder.jrd)
-        self.response_json = WebFingerJRD.from_json(self.builder.to_json())
 
     def test_subject(self):
         self.assertEqual(self.response.subject,
@@ -111,9 +110,6 @@ class TestWebFingerBuild(unittest.TestCase):
 
     def test_misc(self):
         self.assertEqual(self.response.jrd["test-extra"], "123")
-
-    def test_json(self):
-        self.assertEqual(self.response.jrd, self.response_json.jrd)
 
     def test_invalid_link_rel(self):
         self.assertRaises(WebFingerJRDError, self.builder.add_link,
@@ -150,6 +146,58 @@ class TestWebFingerBuild(unittest.TestCase):
     def test_property_none(self):
         self.builder.add_property("http://uri.example", None)
         self.assertIn("http://uri.example", self.builder.jrd["properties"])
+
+
+class TestWebFingerJSON(unittest.TestCase):
+    def setUp(self):
+        jrd = \
+            '{' \
+            '  "aliases": [' \
+            '    "https://mst3k.interlinked.me/@Elizafox",' \
+            '    "https://mst3k.interlinked.me/users/Elizafox"' \
+            '  ],' \
+            '  "properties": {' \
+            '    "https://example.org/test": "testprop",' \
+            '    "https://example.org/test2": "testprop2"' \
+            '  },' \
+            '  "links": [' \
+            '    {' \
+            '      "href": "https://mst3k.interlinked.me/@Elizafox",' \
+            '      "rel": "http://webfinger.net/rel/profile-page",' \
+            '      "type": "text/html"' \
+            '    },' \
+            '    {' \
+            '      "href": "https://mst3k.interlinked.me/users/Elizafox",' \
+            '      "rel": "self",' \
+            '      "type": "application/activity+json"' \
+            '    }' \
+            '  ],' \
+            '  "subject": "acct:Elizafox@mst3k.interlinked.me"' \
+            '}'
+
+        self.response = WebFingerJRD.from_json(jrd)
+
+    def test_subject(self):
+        self.assertEqual(self.response.subject, "acct:Elizafox@mst3k.interlinked.me")
+
+    def test_properties(self):
+        self.assertEqual(self.response.properties,
+            {"https://example.org/test": "testprop",
+             "https://example.org/test2": "testprop2"})
+
+    def test_links(self):
+        self.assertEqual(self.response.jrd["links"],
+            [{"href": "https://mst3k.interlinked.me/@Elizafox",
+              "rel": "http://webfinger.net/rel/profile-page",
+              "type": "text/html"},
+             {"href": "https://mst3k.interlinked.me/users/Elizafox",
+              "rel": "self",
+              "type": "application/activity+json"}])
+
+    def test_aliases(self):
+        self.assertEqual(self.response.aliases,
+            ["https://mst3k.interlinked.me/@Elizafox",
+             "https://mst3k.interlinked.me/users/Elizafox"])
 
 
 @unittest.skipIf(aiohttp is None, "aiohttp is not importable")

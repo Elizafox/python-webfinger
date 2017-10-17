@@ -176,6 +176,7 @@ class TestWebFingerJSON(unittest.TestCase):
             '}'
 
         self.response = WebFingerJRD.from_json(jrd)
+        self.response2 = WebFingerJRD.from_json(self.response.to_json())
 
     def test_subject(self):
         self.assertEqual(self.response.subject, "acct:Elizafox@mst3k.interlinked.me")
@@ -198,6 +199,18 @@ class TestWebFingerJSON(unittest.TestCase):
         self.assertEqual(self.response.aliases,
             ["https://mst3k.interlinked.me/@Elizafox",
              "https://mst3k.interlinked.me/users/Elizafox"])
+
+    def test_equivalent_subject(self):
+        self.assertEqual(self.response.subject, self.response2.subject)
+
+    def test_equivalent_properties(self):
+        self.assertEqual(self.response.properties, self.response2.properties)
+
+    def test_equivalent_links(self):
+        self.assertEqual(self.response.jrd["links"], self.response2.jrd["links"])
+
+    def test_equivalent_aliases(self):
+        self.assertEqual(self.response.aliases, self.response2.aliases)
 
 
 class TestWebFingerXML(unittest.TestCase):
@@ -218,6 +231,7 @@ class TestWebFingerXML(unittest.TestCase):
         '</XRD>'
 
         self.response = WebFingerJRD.from_xml(xrd)
+        self.response2 = WebFingerJRD.from_xml(self.response.to_xml())
 
     def test_subject(self):
         self.assertEqual(self.response.subject, "acct:Elizafox@mst3k.interlinked.me")
@@ -240,6 +254,19 @@ class TestWebFingerXML(unittest.TestCase):
         self.assertEqual(self.response.aliases,
             ["https://mst3k.interlinked.me/@Elizafox",
              "https://mst3k.interlinked.me/users/Elizafox"])
+
+    def test_equivalent_subject(self):
+        self.assertEqual(self.response.subject, self.response2.subject)
+
+    def test_equivalent_properties(self):
+        self.assertEqual(self.response.properties, self.response2.properties)
+
+    def test_equivalent_links(self):
+        self.assertEqual(self.response.jrd["links"], self.response2.jrd["links"])
+
+    def test_equivalent_aliases(self):
+        self.assertEqual(self.response.aliases, self.response2.aliases)
+
 
 @unittest.skipIf(aiohttp is None, "aiohttp is not importable")
 class TestAioHTTPClient(unittest.TestCase):

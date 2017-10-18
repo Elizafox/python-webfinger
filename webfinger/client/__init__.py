@@ -8,6 +8,7 @@ import abc
 
 from webfinger import __version__ as version
 from webfinger.objects.jrd import WebFingerJRD
+from webfinger.exceptions import WebFingerContentError
 
 
 class BaseWebFingerClient(abc.ABC):
@@ -16,10 +17,19 @@ class BaseWebFingerClient(abc.ABC):
     All WebFinger clients implement at least this interface.
     """
 
-    WEBFINGER_TYPE = "application/jrd+json"
-    LEGACY_WEBFINGER_TYPES = ["application/json"]
+    # WebFinger types and representative q values and the correct parser
+    WEBFINGER_TYPES = {"application/jrd+json": (1, "json"),
+                       "application/json": (0.9, "json"),
+                       "application/xrd+xml": (0.5, "xml"),
+                       "application/xml": (0.4, "xml")}
+
     WEBFINGER_URL = "https://{host}/.well-known/webfinger"
     USER_AGENT = "Python-Webfinger/{version}".format(version=version)
+
+    def generate_accept_header(self):
+        """Generate an accept header."""
+        return '; '.join("q={}, {}".format(v[0], k) for k, v in
+                        self.WEBFINGER_TYPES.items())
 
     @staticmethod
     def parse_host(resource):
@@ -28,9 +38,12 @@ class BaseWebFingerClient(abc.ABC):
         return host
 
     @staticmethod
-    def parse_response(response):
-        """Parse WebFinger response."""
-        return WebFingerJRD(response)
+    def parse_response(response, parser):
+        """Parse WebFinger response using the given parser."""
+        parser_name = "from_{}".format(parser)
+        parser = getattr(WebFingerJRD, parser_name, None)
+        assert parser is not None, "Invalid content type parser"
+        return parser(response)
 
     @abc.abstractmethod
     def get(self, url, params, headers):

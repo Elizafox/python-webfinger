@@ -41,15 +41,36 @@ class WebFingerClient(BaseWebFingerClient):
             # Lazily create session
             self.session = requests.Session()
 
-        resp = self.session.get(url, params=params, headers=headers,
-                                timeout=self.timeout, verify=True)
-        resp.raise_for_status()
-        return resp
+        response = self.session.get(url, params=params, headers=headers,
+                                    timeout=self.timeout, verify=True)
+        response.raise_for_status()
+        return response
 
     def close(self):
         """Close HTTP session"""
         if self.session:
             self.session.close()
+
+    def parse_response(self, response):
+        """Parse the response.
+
+        This function is given a response object from requests. The parser
+        parameter is not allowed with this method; it will be deduced.
+        """
+        try:
+            content_type = response.headers["Content-Type"]
+        except KeyError:
+            raise WebFingerContentError("No Content-Type from server")
+
+        content_type = response.headers["Content-Type"]
+        content_type = content_type.split(";", 1)[0].strip()
+        logger.debug("response content type: %s" % content_type)
+
+        if content_type not in self.WEBFINGER_TYPES:
+            raise WebFingerContentError("Unacceptable content type")
+
+        parser = self.WEBFINGER_TYPES[content_type][1]
+        return super().parse_response(response.text, parser)
 
     def finger(self, resource, host=None, rel=None, raw=False, params=dict(),
                headers=dict()):
@@ -74,11 +95,11 @@ class WebFingerClient(BaseWebFingerClient):
             params["rel"] = rel
 
         headers["User-Agent"] = self.USER_AGENT
-        headers["Accept"] = self.WEBFINGER_TYPE
+        headers["Accept"] = self.generate_accept_header()
 
         logger.debug("fetching JRD from %s" % url)
         try:
-            resp = self.get(url, params, headers)
+            response = self.get(url, params, headers)
         except requests.exceptions.HTTPError as e:
             raise WebFingerHTTPError("Error with request", str(e)) from e
         except requests.exceptions.SSLError as e:
@@ -86,22 +107,7 @@ class WebFingerClient(BaseWebFingerClient):
         except Exception as e:
             raise WebFingerNetworkError("Could not connect", str(e)) from e
 
-        try:
-            content_type = resp.headers["Content-Type"]
-        except KeyError:
-            raise WebFingerContentError("Invalid Content-Type from server",
-                                        content_type)
-
-        content_type = content_type.split(";", 1)[0].strip()
-        logger.debug("response content type: %s" % content_type)
-
-        if (content_type != self.WEBFINGER_TYPE and content_type not in
-                self.LEGACY_WEBFINGER_TYPES):
-            raise WebFingerContentError("Invalid Content-Type from server",
-                                        content_type)
-
-        response = resp.json()
         if raw:
-            return response
+            return response.text
 
         return self.parse_response(response)

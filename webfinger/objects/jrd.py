@@ -357,5 +357,4 @@ class WebFingerJRD:
         try:
             return ElementTree.tostring(tree.close(), encoding="unicode")
         except Exception as e:
-            # TODO - better error
             raise WebFingerXRDError("Could not serialise into XML", e) from e

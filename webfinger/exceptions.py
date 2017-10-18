@@ -23,11 +23,31 @@ class WebFingerContentError(WebFingerException):
     """
 
 
-class WebFingerJRDError(WebFingerContentError):
-    """Error parsing the JRD.
+class WebFingerRDError(WebFingerContentError):
+    """Error parsing an RD.
 
     This could be due to expected elements that are missing, or the response
     is not a WebFinger response at all.
+
+    This is intended for use as a base class.
+    """
+
+
+class WebFingerJRDError(WebFingerRDError):
+    """Error parsing a JRD.
+
+    This could be due to expected elements that are missing, or the response
+    is not a WebFinger response at all. The response may also be an XRD, not
+    a JRD.
+    """
+
+
+class WebFingerXRDError(WebFingerRDError):
+    """Error parsing an XRD
+
+    This could be due to expected elements that are missing, or the response
+    is not a WebFinger response at all. The response may also be a JRD, not an
+    XRD.
     """
 
 

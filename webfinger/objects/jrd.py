@@ -29,6 +29,9 @@ class WebFingerJRD:
     attribute of links as a key (or None for links where rel is ommitted).
     URI's will be mapped to friendly attribute names if known.
 
+    The from_xml() class method can be used to parse an XRD into this object.
+    The to_xml() method can be used to turn the JRD into an XRD.
+
     The add_* methods can be used to update the JRD with various attributes.
     A JSON representation can be retrieved with the to_json() method.
     """
@@ -116,12 +119,11 @@ class WebFingerJRD:
         try:
             root = DefusedElementTree.fromstring(text)
         except Exception as e:
-            # TODO - better error
-            raise WebFingerJRDERror("error parsing XRD") from e
+            raise WebFingerXRDERror("error parsing XRD XML") from e
 
         subject = root.find("XRD:Subject", XMLNSMAP)
         if subject is None:
-            raise WebFingerJRDError("subject is required")
+            raise WebFingerXRDError("subject is required")
 
         jrd = {"subject": subject.text}
 
@@ -130,8 +132,7 @@ class WebFingerJRD:
             aliases_jrd = jrd["aliases"] = []
             for alias in aliases:
                 if not alias.text:
-                    # TODO - better error
-                    raise WebFingerJRDError("alias had no content")
+                    raise WebFingerXRDError("alias had no content")
                 aliases_jrd.append(alias.text)
 
         properties = parse_properties(root)
@@ -165,6 +166,7 @@ class WebFingerJRD:
                 links_jrd.append(link_jrd)
 
         # TODO - any other elements
+
         return cls(jrd)
 
     @classmethod
@@ -344,12 +346,10 @@ class WebFingerJRD:
                         # Serialise properties
                         serialise_property(link, attr)
                     else:
-                        # TODO - better error
-                        raise WebFingerJRDError(
+                        raise WebFingerXRDError(
                             "Can't serialise link attribute", elem, attr)
                 else:
-                    # TODO - better error
-                    raise WebFingerJRDError("Can't serialise type into XML",
+                    raise WebFingerXRDError("Can't serialise type into XML",
                         type(attr), attr)
 
         # TODO - serialise other elements
@@ -358,7 +358,4 @@ class WebFingerJRD:
             return ElementTree.tostring(tree.close(), encoding="unicode")
         except Exception as e:
             # TODO - better error
-            raise WebFingerJRDError("Could not serialise into XML", e) from e
-
-    def __str__(self):
-        return self.to_json()
+            raise WebFingerXRDError("Could not serialise into XML", e) from e

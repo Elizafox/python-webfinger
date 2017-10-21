@@ -74,7 +74,7 @@ class WebFingerClient(BaseWebFingerClient):
         parser = self.WEBFINGER_TYPES[content_type][1]
         if parser == "json":
             json = yield from response.json(content_type=None)
-            return WebFingerJRD(json)
+            return self.JRD_OBJECT(json)
         else:
             text = yield from response.text()
             return super().parse_response(text, parser)

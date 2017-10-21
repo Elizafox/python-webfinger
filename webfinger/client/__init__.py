@@ -17,14 +17,20 @@ class BaseWebFingerClient(abc.ABC):
     All WebFinger clients implement at least this interface.
     """
 
-    # WebFinger types and representative q values and the correct parser
     WEBFINGER_TYPES = {"application/jrd+json": (1, "json"),
                        "application/json": (0.9, "json"),
                        "application/xrd+xml": (0.5, "xml"),
                        "application/xml": (0.4, "xml")}
+    """Webfinger MIME types, mapped to q values and parser type."""
 
     WEBFINGER_URL = "https://{host}/.well-known/webfinger"
+    """Format of WebFinger endpoint."""
+
     USER_AGENT = "Python-Webfinger/{version}".format(version=version)
+    """User agent to use."""
+
+    JRD_OBJECT = WebFingerJRD
+    """JRD object to use for parsing and emitting (default is WebFingerJRD)."""
 
     def generate_accept_header(self):
         """Generate an accept header."""
@@ -37,11 +43,10 @@ class BaseWebFingerClient(abc.ABC):
         host = resource.split("@")[-1]
         return host
 
-    @staticmethod
-    def parse_response(response, parser):
+    def parse_response(self, response, parser):
         """Parse WebFinger response using the given parser."""
         parser_name = "from_{}".format(parser)
-        parser = getattr(WebFingerJRD, parser_name, None)
+        parser = getattr(self.JRD_OBJECT, parser_name, None)
         assert parser is not None, "Invalid content type parser"
         return parser(response)
 

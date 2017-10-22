@@ -6,7 +6,7 @@ people or things in a standardized way.
 This package provides a few tools for using WebFinger, including:
     - requests-based webfinger client (webfinger.client.requests.WebFingerClient)
     - aiohttp-based webfinger client(webfinger.client.aiohttp.WebFingerClient)
-    - a class to build WebFinger JRD's (webfinger.objects.WebFingerBuilder)
+    - The WebFingerJRD object to build JRD's/XRD's (webfinger.objects.WebFingerJRD)
 
 In this module, the following are exposed:
     - BaseWebFingerClient (from webfinger.client)
@@ -18,12 +18,11 @@ In this module, the following are exposed:
 """
 
 
-__version__ = "3.0.0.dev2"
+__version__ = "3.0.0.dev3"
 
 
 from webfinger.client import BaseWebFingerClient
 from webfinger.client.requests import WebFingerClient
-from webfinger.objects import RELS, REL_NAMES
 from webfinger.objects.jrd import WebFingerJRD
 from webfinger.exceptions import *
 
